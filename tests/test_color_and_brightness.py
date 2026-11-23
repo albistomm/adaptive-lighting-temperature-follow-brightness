@@ -1,5 +1,6 @@
 import datetime as dt
 import zoneinfo
+from dataclasses import replace
 
 import astral.sun
 import pytest
@@ -334,6 +335,140 @@ def test_brightness_pct_varies_with_inverted_brightness_bounds(
 
     assert len({round(value) for value in samples}) > 1, samples
     assert all(15 <= value <= 100 for value in samples), samples
+
+
+@pytest.mark.parametrize("mode", ["linear", "tanh"])
+@pytest.mark.parametrize("event", ["sunrise", "sunset"])
+def test_temperature_ramp(tzinfo_and_location, mode, event):
+    tzinfo, location = tzinfo_and_location
+    settings = replace(
+        _make_brightness_settings(
+            tzinfo,
+            location,
+            min_brightness=10,
+            max_brightness=90,
+            brightness_mode="default",
+        ),
+        temperature_mode=mode,
+        temperature_mode_time_dark=dt.timedelta(minutes=20),
+        temperature_mode_time_light=dt.timedelta(minutes=40),
+    )
+    event_time = getattr(settings.sun, event)(dt.date(2022, 6, 1))
+    offsets = (-20, 40) if event == "sunrise" else (-40, 20)
+    fractions = (0, 1) if mode == "linear" else (0.05, 0.95)
+    if event == "sunset":
+        fractions = fractions[::-1]
+    for offset, fraction in zip(offsets, fractions, strict=True):
+        result = settings.brightness_and_color(
+            event_time + dt.timedelta(minutes=offset),
+            False,
+        )
+        assert result["color_temp_kelvin"] == 2000 + fraction * 4500
+
+
+@pytest.mark.parametrize("mode", ["linear", "tanh", "brightness"])
+def test_temperature_curve_with_inverted_bounds(tzinfo_and_location, mode):
+    tzinfo, location = tzinfo_and_location
+    settings = replace(
+        _make_brightness_settings(
+            tzinfo,
+            location,
+            min_brightness=10,
+            max_brightness=90,
+            brightness_mode="linear",
+        ),
+        temperature_mode=mode,
+        min_color_temp=6500,
+        max_color_temp=2000,
+    )
+    sunrise = settings.sun.sunrise(dt.date(2022, 6, 1))
+    before = settings.brightness_and_color(sunrise - dt.timedelta(minutes=10), False)
+    after = settings.brightness_and_color(sunrise + dt.timedelta(minutes=10), False)
+    assert 2000 <= after["color_temp_kelvin"] < before["color_temp_kelvin"] <= 6500
+
+
+@pytest.mark.parametrize("mode", ["default", "linear", "tanh"])
+@pytest.mark.parametrize(("minimum", "maximum"), [(10, 90), (90, 10), (50, 50)])
+def test_temperature_follows_brightness_curve(
+    tzinfo_and_location, mode, minimum, maximum,
+):
+    tzinfo, location = tzinfo_and_location
+    settings = replace(
+        _make_brightness_settings(
+            tzinfo,
+            location,
+            min_brightness=minimum,
+            max_brightness=maximum,
+            brightness_mode=mode,
+        ),
+        temperature_mode="brightness",
+        temperature_mode_time_dark=dt.timedelta(hours=3),
+        temperature_mode_time_light=dt.timedelta(hours=4),
+    )
+    reference = replace(settings, min_brightness=0, max_brightness=100)
+    for event in ("sunrise", "sunset"):
+        event_time = getattr(settings.sun, event)(dt.date(2022, 6, 1))
+        for offset in (-60, -15, 0, 15, 60):
+            now = event_time + dt.timedelta(minutes=offset)
+            fraction = reference.brightness_pct(now, False) / 100
+            if minimum > maximum:
+                fraction = 1 - fraction
+            result = settings.brightness_and_color(now, False)
+            assert result["color_temp_kelvin"] == 5 * round(
+                (2000 + fraction * 4500) / 5,
+            )
+
+
+@pytest.mark.parametrize("mode", ["linear", "tanh", "brightness"])
+def test_temperature_curve_overrides_until_sleep_not_sleep_mode(
+    tzinfo_and_location, mode,
+):
+    tzinfo, location = tzinfo_and_location
+    settings = replace(
+        _make_brightness_settings(
+            tzinfo,
+            location,
+            min_brightness=10,
+            max_brightness=90,
+            brightness_mode="linear",
+        ),
+        temperature_mode=mode,
+        adapt_until_sleep=True,
+        sleep_rgb_or_color_temp="rgb_color",
+        sleep_color_temp=1000,
+    )
+    now = settings.sun.sunset(dt.date(2022, 6, 1)) + dt.timedelta(hours=2)
+    result = settings.brightness_and_color(now, False)
+    assert result["color_temp_kelvin"] >= settings.min_color_temp
+    assert not result["force_rgb_color"]
+    sleep = settings.brightness_and_color(now, True)
+    assert sleep["color_temp_kelvin"] == 1000
+    assert sleep["rgb_color"] == settings.sleep_rgb_color
+
+
+@pytest.mark.parametrize("mode", ["linear", "tanh"])
+def test_zero_duration_temperature_ramp(tzinfo_and_location, mode):
+    tzinfo, location = tzinfo_and_location
+    settings = replace(
+        _make_brightness_settings(
+            tzinfo,
+            location,
+            min_brightness=10,
+            max_brightness=90,
+            brightness_mode="default",
+        ),
+        temperature_mode=mode,
+        temperature_mode_time_dark=dt.timedelta(),
+        temperature_mode_time_light=dt.timedelta(),
+    )
+    sunrise = settings.sun.sunrise(dt.date(2022, 6, 1))
+    assert (
+        settings.brightness_and_color(sunrise - dt.timedelta(seconds=1), False)[
+            "color_temp_kelvin"
+        ]
+        == 2000
+    )
+    assert settings.brightness_and_color(sunrise, False)["color_temp_kelvin"] == 6500
 
 
 # Tromsø, Norway (69.6°N) has polar night (Nov-Jan) and midnight sun (May-Jul).

@@ -300,6 +300,9 @@ class SunLightSettings:
     sunrise_offset: datetime.timedelta = datetime.timedelta()
     sunset_offset: datetime.timedelta = datetime.timedelta()
     timezone: datetime.tzinfo = UTC
+    temperature_mode: Literal["default", "linear", "tanh", "brightness"] = "default"
+    temperature_mode_time_dark: datetime.timedelta = datetime.timedelta(seconds=900)
+    temperature_mode_time_light: datetime.timedelta = datetime.timedelta(seconds=3600)
 
     @cached_property
     def sun(self) -> SunEvents:
@@ -326,61 +329,39 @@ class SunLightSettings:
         delta_brightness = self.max_brightness - self.min_brightness
         return (delta_brightness * (1 + sun_position)) + self.min_brightness
 
-    def _brightness_pct_tanh(self, dt: datetime.datetime) -> float:
+    def _ramp(
+        self,
+        dt: datetime.datetime,
+        mode: Literal["linear", "tanh"],
+        time_dark: datetime.timedelta,
+        time_light: datetime.timedelta,
+        minimum: float,
+        maximum: float,
+    ) -> float:
         event, ts_event = self.sun.closest_event(dt)
-        dark = self.brightness_mode_time_dark.total_seconds()
-        light = self.brightness_mode_time_light.total_seconds()
+        dark = time_dark.total_seconds()
+        light = time_light.total_seconds()
+        elapsed = dt.timestamp() - ts_event
+        if dark == 0 and light == 0:
+            if event == SunEvent.SUNRISE:
+                return maximum if elapsed >= 0 else minimum
+            return minimum if elapsed >= 0 else maximum
         if event == SunEvent.SUNRISE:
-            brightness = scaled_tanh(
-                dt.timestamp() - ts_event,
-                x1=-dark,
-                x2=+light,
-                y1=0.05,  # be at 5% of range at x1
-                y2=0.95,  # be at 95% of range at x2
-                y_min=self.min_brightness,
-                y_max=self.max_brightness,
-            )
+            x1, x2 = -dark, light
+            start, end = minimum, maximum
+            y1, y2 = 0.05, 0.95
         elif event == SunEvent.SUNSET:
-            brightness = scaled_tanh(
-                dt.timestamp() - ts_event,
-                x1=-light,  # shifted timestamp for the start of sunset
-                x2=+dark,  # shifted timestamp for the end of sunset
-                y1=0.95,  # be at 95% of range at the start of sunset
-                y2=0.05,  # be at 5% of range at the end of sunset
-                y_min=self.min_brightness,
-                y_max=self.max_brightness,
-            )
+            x1, x2 = -light, dark
+            start, end = maximum, minimum
+            y1, y2 = 0.95, 0.05
         else:
             msg = "Unsupported sun event"
             raise ValueError(msg)
-        return clamp(brightness, self.min_brightness, self.max_brightness)
-
-    def _brightness_pct_linear(self, dt: datetime.datetime) -> float:
-        event, ts_event = self.sun.closest_event(dt)
-        # at ts_event - dt_start, brightness == start_brightness
-        # at ts_event + dt_end, brightness == end_brightness
-        dark = self.brightness_mode_time_dark.total_seconds()
-        light = self.brightness_mode_time_light.total_seconds()
-        if event == SunEvent.SUNRISE:
-            brightness = lerp(
-                dt.timestamp() - ts_event,
-                x1=-dark,
-                x2=+light,
-                y1=self.min_brightness,
-                y2=self.max_brightness,
-            )
-        elif event == SunEvent.SUNSET:
-            brightness = lerp(
-                dt.timestamp() - ts_event,
-                x1=-light,
-                x2=+dark,
-                y1=self.max_brightness,
-                y2=self.min_brightness,
-            )
+        if mode == "linear":
+            value = lerp(elapsed, x1, x2, start, end)
         else:
-            msg = "Unsupported sun event"
-            raise ValueError(msg)
-        return clamp(brightness, self.min_brightness, self.max_brightness)
+            value = scaled_tanh(elapsed, x1, x2, y1, y2, minimum, maximum)
+        return clamp(value, minimum, maximum)
 
     def brightness_pct(self, dt: datetime.datetime, is_sleep: bool) -> float | None:
         """Calculate the brightness in %."""
@@ -389,10 +370,15 @@ class SunLightSettings:
         assert self.brightness_mode in ("default", "linear", "tanh")
         if self.brightness_mode == "default":
             return self._brightness_pct_default(dt)
-        if self.brightness_mode == "linear":
-            return self._brightness_pct_linear(dt)
-        if self.brightness_mode == "tanh":
-            return self._brightness_pct_tanh(dt)
+        if self.brightness_mode in ("linear", "tanh"):
+            return self._ramp(
+                dt,
+                self.brightness_mode,
+                self.brightness_mode_time_dark,
+                self.brightness_mode_time_light,
+                self.min_brightness,
+                self.max_brightness,
+            )
         return None
 
     def color_temp_kelvin(self, sun_position: float) -> int:
@@ -409,6 +395,31 @@ class SunLightSettings:
             return 5 * round(ct / 5)  # round to nearest 5
         msg = "Should not happen"
         raise ValueError(msg)
+
+    def _temperature_for_time(self, dt: datetime.datetime, sun_position: float) -> int:
+        if self.temperature_mode == "default":
+            return self.color_temp_kelvin(sun_position)
+        if self.temperature_mode == "brightness":
+            mode = self.brightness_mode
+            dark = self.brightness_mode_time_dark
+            light = self.brightness_mode_time_light
+        else:
+            mode = self.temperature_mode
+            dark = self.temperature_mode_time_dark
+            light = self.temperature_mode_time_light
+        if mode == "default":
+            fraction = 1 + min(sun_position, 0)
+        else:
+            fraction = self._ramp(dt, mode, dark, light, 0, 1)
+        if (
+            self.temperature_mode == "brightness"
+            and self.min_brightness > self.max_brightness
+        ):
+            fraction = 1 - fraction
+        temperature = self.min_color_temp + fraction * (
+            self.max_color_temp - self.min_color_temp
+        )
+        return 5 * round(temperature / 5)
 
     def brightness_and_color(
         self,
@@ -427,6 +438,7 @@ class SunLightSettings:
         elif (
             self.sleep_rgb_or_color_temp == "rgb_color"
             and self.adapt_until_sleep
+            and self.temperature_mode == "default"
             and sun_position < 0
         ):
             # Feature requested in
@@ -439,10 +451,10 @@ class SunLightSettings:
                 self.sleep_rgb_color,
                 sun_position,
             )
-            color_temp_kelvin = self.color_temp_kelvin(sun_position)
+            color_temp_kelvin = self._temperature_for_time(dt, sun_position)
             force_rgb_color = True
         else:
-            color_temp_kelvin = self.color_temp_kelvin(sun_position)
+            color_temp_kelvin = self._temperature_for_time(dt, sun_position)
             r, g, b = color_temperature_to_rgb(color_temp_kelvin)
             rgb_color = (round(r), round(g), round(b))
         # backwards compatibility for versions < 1.3.1 - see #403

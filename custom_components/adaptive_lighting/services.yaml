@@ -217,6 +217,29 @@ change_switch_settings:
       required: false
       selector:
         time: null
+    temperature_mode:
+      description: 'Temperature curve: `default`, `linear`, `tanh`, or `brightness` (follow the brightness curve). Non-default modes ignore `transition_until_sleep` for color outside sleep mode.'
+      required: false
+      example: default
+      selector:
+        select:
+          options:
+          - default
+          - linear
+          - tanh
+          - brightness
+    temperature_mode_time_dark:
+      description: Nonnegative seconds to ramp temperature before sunrise and after sunset. Ignored for `default` and `brightness` temperature modes.
+      required: false
+      example: 900
+      selector:
+        text: null
+    temperature_mode_time_light:
+      description: Nonnegative seconds to ramp temperature after sunrise and before sunset. Ignored for `default` and `brightness` temperature modes.
+      required: false
+      example: 3600
+      selector:
+        text: null
     min_sunset_time:
       description: Set the earliest virtual sunset time (HH:MM:SS), allowing for later sunsets. 🌇
       example: ''

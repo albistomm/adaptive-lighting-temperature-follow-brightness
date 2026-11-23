@@ -10,17 +10,22 @@ try:
 except ImportError:
     from voluptuous_serialize import convert as to_field_list
 from homeassistant.components.adaptive_lighting.const import (
+    _DOMAIN_SCHEMA,
     BASIC_OPTIONS,
     CONF_EXPAND_LIGHT_GROUPS,
     CONF_INITIAL_TRANSITION,
     CONF_MANUAL_CONTROL_ON_EXTERNAL_TURN_ON,
     CONF_SUNRISE_TIME,
     CONF_SUNSET_TIME,
+    CONF_TEMPERATURE_MODE,
+    CONF_TEMPERATURE_MODE_TIME_DARK,
+    CONF_TEMPERATURE_MODE_TIME_LIGHT,
     DEFAULT_MANUAL_CONTROL_ON_EXTERNAL_TURN_ON,
     DEFAULT_NAME,
     DOMAIN,
     NONE_STR,
     VALIDATION_TUPLES,
+    change_switch_settings_schema,
 )
 from homeassistant.config_entries import SOURCE_IMPORT
 from homeassistant.const import CONF_NAME
@@ -51,6 +56,17 @@ def _advanced_section(result) -> section:
     advanced = result["data_schema"].schema["advanced"]
     assert isinstance(advanced, section)
     return advanced
+
+
+@pytest.mark.parametrize(
+    "key", [CONF_TEMPERATURE_MODE_TIME_DARK, CONF_TEMPERATURE_MODE_TIME_LIGHT],
+)
+def test_temperature_duration_validation(key):
+    """Zero is supported, while negative ramp durations are rejected."""
+    for schema in (_DOMAIN_SCHEMA, vol.Schema(change_switch_settings_schema())):
+        assert schema({key: 0})[key] == 0
+        with pytest.raises(vol.Invalid):
+            schema({key: -1})
 
 
 async def test_flow_manual_configuration(hass):
@@ -110,6 +126,9 @@ async def test_options(hass):
     advanced_data[CONF_EXPAND_LIGHT_GROUPS] = False
     advanced_data[CONF_SUNRISE_TIME] = NONE_STR
     advanced_data[CONF_SUNSET_TIME] = NONE_STR
+    advanced_data[CONF_TEMPERATURE_MODE] = "tanh"
+    advanced_data[CONF_TEMPERATURE_MODE_TIME_DARK] = 1200
+    advanced_data[CONF_TEMPERATURE_MODE_TIME_LIGHT] = 2400
     basic_data = {**BASIC_DATA, "min_brightness": 12}
     user_input = {
         **basic_data,

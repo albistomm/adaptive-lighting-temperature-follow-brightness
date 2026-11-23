@@ -60,6 +60,9 @@ from homeassistant.components.adaptive_lighting.const import (
     CONF_SUNSET_TIME,
     CONF_TAKE_OVER_CONTROL,
     CONF_TAKE_OVER_CONTROL_MODE,
+    CONF_TEMPERATURE_MODE,
+    CONF_TEMPERATURE_MODE_TIME_DARK,
+    CONF_TEMPERATURE_MODE_TIME_LIGHT,
     CONF_TRANSITION,
     CONF_TURN_ON_LIGHTS,
     CONF_USE_DEFAULTS,
@@ -4732,6 +4735,22 @@ async def test_just_turned_off_group_context_reuse_end_to_end(hass, cleanup):
     )
     for entity_id in ["light.light_4", "light.light_5"]:
         assert hass.states.get(entity_id).attributes[ATTR_BRIGHTNESS] == 128
+
+
+@pytest.mark.parametrize("temperature_mode", ["linear", "tanh", "brightness"])
+async def test_temperature_mode_configuration(hass, temperature_mode):
+    _, switch = await setup_switch(
+        hass,
+        {
+            CONF_TEMPERATURE_MODE: temperature_mode,
+            CONF_TEMPERATURE_MODE_TIME_DARK: datetime.timedelta(minutes=20),
+            CONF_TEMPERATURE_MODE_TIME_LIGHT: datetime.timedelta(minutes=40),
+        },
+    )
+    settings = switch._sun_light_settings
+    assert settings.temperature_mode == temperature_mode
+    assert settings.temperature_mode_time_dark == datetime.timedelta(minutes=20)
+    assert settings.temperature_mode_time_light == datetime.timedelta(minutes=40)
 
 
 @pytest.mark.parametrize("brightness_mode", ["linear", "tanh"])

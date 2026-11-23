@@ -206,6 +206,29 @@ DOCS[CONF_BRIGHTNESS_MODE_TIME_LIGHT] = (
     "the brightness after/before sunrise/sunset. 📈📉."
 )
 
+CONF_TEMPERATURE_MODE, DEFAULT_TEMPERATURE_MODE = "temperature_mode", "default"
+DOCS[CONF_TEMPERATURE_MODE] = (
+    "Temperature curve: `default`, `linear`, `tanh`, or `brightness` "
+    "(follow the brightness curve). Non-default modes ignore "
+    "`transition_until_sleep` for color outside sleep mode."
+)
+CONF_TEMPERATURE_MODE_TIME_DARK, DEFAULT_TEMPERATURE_MODE_TIME_DARK = (
+    "temperature_mode_time_dark",
+    900,
+)
+DOCS[CONF_TEMPERATURE_MODE_TIME_DARK] = (
+    "Nonnegative seconds to ramp temperature before sunrise and after sunset. "
+    "Ignored for `default` and `brightness` temperature modes."
+)
+CONF_TEMPERATURE_MODE_TIME_LIGHT, DEFAULT_TEMPERATURE_MODE_TIME_LIGHT = (
+    "temperature_mode_time_light",
+    3600,
+)
+DOCS[CONF_TEMPERATURE_MODE_TIME_LIGHT] = (
+    "Nonnegative seconds to ramp temperature after sunrise and before sunset. "
+    "Ignored for `default` and `brightness` temperature modes."
+)
+
 CONF_TAKE_OVER_CONTROL, DEFAULT_TAKE_OVER_CONTROL = "take_over_control", True
 DOCS[CONF_TAKE_OVER_CONTROL] = (
     "Pause adaptation of individual lights and hand over (manual) control to other sources that "
@@ -411,6 +434,27 @@ VALIDATION_TUPLES: list[tuple[str, Any, Any]] = [
     ),
     (CONF_BRIGHTNESS_MODE_TIME_DARK, DEFAULT_BRIGHTNESS_MODE_TIME_DARK, int),
     (CONF_BRIGHTNESS_MODE_TIME_LIGHT, DEFAULT_BRIGHTNESS_MODE_TIME_LIGHT, int),
+    (
+        CONF_TEMPERATURE_MODE,
+        DEFAULT_TEMPERATURE_MODE,
+        selector.SelectSelector(  # type: ignore[arg-type]
+            selector.SelectSelectorConfig(
+                options=["default", "linear", "tanh", "brightness"],
+                multiple=False,
+                mode=selector.SelectSelectorMode.DROPDOWN,
+            ),
+        ),
+    ),
+    (
+        CONF_TEMPERATURE_MODE_TIME_DARK,
+        DEFAULT_TEMPERATURE_MODE_TIME_DARK,
+        cv.positive_int,
+    ),
+    (
+        CONF_TEMPERATURE_MODE_TIME_LIGHT,
+        DEFAULT_TEMPERATURE_MODE_TIME_LIGHT,
+        cv.positive_int,
+    ),
     (CONF_TAKE_OVER_CONTROL, DEFAULT_TAKE_OVER_CONTROL, bool),
     (
         CONF_TAKE_OVER_CONTROL_MODE,
@@ -481,6 +525,8 @@ EXTRA_VALIDATION: dict[str, tuple[Any, Any]] = {
     CONF_MAX_SUNSET_TIME: (cv.time, str),
     CONF_BRIGHTNESS_MODE_TIME_LIGHT: (cv.time_period, timedelta_as_int),
     CONF_BRIGHTNESS_MODE_TIME_DARK: (cv.time_period, timedelta_as_int),
+    CONF_TEMPERATURE_MODE_TIME_LIGHT: (cv.positive_time_period, timedelta_as_int),
+    CONF_TEMPERATURE_MODE_TIME_DARK: (cv.positive_time_period, timedelta_as_int),
 }
 
 

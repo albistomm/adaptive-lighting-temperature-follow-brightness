@@ -64,6 +64,9 @@
               "brightness_mode": "brightness_mode",
               "brightness_mode_time_dark": "brightness_mode_time_dark",
               "brightness_mode_time_light": "brightness_mode_time_light",
+              "temperature_mode": "temperature_mode",
+              "temperature_mode_time_dark": "temperature_mode_time_dark",
+              "temperature_mode_time_light": "temperature_mode_time_light",
               "take_over_control": "take_over_control: Pause adaptation of individual lights and hand over (manual) control to other sources that issue `light.turn_on` calls for lights that are on. 🔒",
               "take_over_control_mode": "take_over_control_mode",
               "detect_non_ha_changes": "detect_non_ha_changes: Detects and halts adaptations for non-`light.turn_on` state changes. Needs `take_over_control` enabled. 🕵️ Caution: ⚠️ Some lights might falsely indicate an 'on' state, which could result in lights turning on unexpectedly. Note that this calls `homeassistant.update_entity` every `interval`! Disable this feature if you encounter such issues.",
@@ -97,6 +100,9 @@
               "brightness_mode": "Brightness mode to use. Possible values are `default`, `linear`, and `tanh` (uses `brightness_mode_time_dark` and `brightness_mode_time_light`). 📈",
               "brightness_mode_time_dark": "(Ignored if `brightness_mode='default'`) The duration in seconds to ramp up/down the brightness before/after sunrise/sunset. 📈📉",
               "brightness_mode_time_light": "(Ignored if `brightness_mode='default'`) The duration in seconds to ramp up/down the brightness after/before sunrise/sunset. 📈📉.",
+              "temperature_mode": "Temperature curve: `default`, `linear`, `tanh`, or `brightness` (follow the brightness curve). Non-default modes ignore `transition_until_sleep` for color outside sleep mode.",
+              "temperature_mode_time_dark": "Nonnegative seconds to ramp temperature before sunrise and after sunset. Ignored for `default` and `brightness` temperature modes.",
+              "temperature_mode_time_light": "Nonnegative seconds to ramp temperature after sunrise and before sunset. Ignored for `default` and `brightness` temperature modes.",
               "take_over_control_mode": "The adaptation pausing mode when other sources change brightness and/or color of lights. `pause_all` always pauses both brightness and color adaptation. `pause_changed` pauses the adaptation of only the changed attributes and continues adapting unchanged attributes, e.g., continues color adaptation when only brightness was changed.",
               "autoreset_control_seconds": "Automatically reset the manual control after a number of seconds. Set to 0 to disable. ⏲️",
               "send_split_delay": "Delay (ms) between `separate_turn_on_commands` for lights that don't support simultaneous brightness and color setting. ⏲️",
@@ -259,6 +265,18 @@
         "max_sunrise_time": {
           "description": "Set the latest virtual sunrise time (HH:MM:SS), allowing for earlier sunrises. 🌅",
           "name": "max_sunrise_time"
+        },
+        "temperature_mode": {
+          "description": "Temperature curve: `default`, `linear`, `tanh`, or `brightness` (follow the brightness curve). Non-default modes ignore `transition_until_sleep` for color outside sleep mode.",
+          "name": "temperature_mode"
+        },
+        "temperature_mode_time_dark": {
+          "description": "Nonnegative seconds to ramp temperature before sunrise and after sunset. Ignored for `default` and `brightness` temperature modes.",
+          "name": "temperature_mode_time_dark"
+        },
+        "temperature_mode_time_light": {
+          "description": "Nonnegative seconds to ramp temperature after sunrise and before sunset. Ignored for `default` and `brightness` temperature modes.",
+          "name": "temperature_mode_time_light"
         },
         "min_sunset_time": {
           "description": "Set the earliest virtual sunset time (HH:MM:SS), allowing for later sunsets. 🌇",

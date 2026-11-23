@@ -49,7 +49,22 @@ Notice the values of `brightness_mode_time_light` and `brightness_mode_time_dark
 
 <!-- OUTPUT:END -->
 
-## Configuration Parameters
+## Temperature modes
+
+`temperature_mode` defaults to the existing sun-position curve. Set it to
+`linear` or `tanh` to ramp between `min_color_temp` and `max_color_temp` using
+`temperature_mode_time_dark` (default 900 seconds) and
+`temperature_mode_time_light` (default 3600 seconds). Set it to `brightness`
+to follow the selected brightness curve and its timing; the temperature timing
+options are ignored in `default` and `brightness` modes. Higher brightness
+corresponds to `max_color_temp` even with inverted brightness bounds. If the
+brightness bounds are equal, it follows the selected underlying curve.
+
+Non-default temperature modes ignore `transition_until_sleep` for color outside
+sleep mode, including its RGB transition. Sleep mode still uses its configured
+sleep color and brightness.
+
+## Brightness Configuration Parameters
 
 When using `linear` or `tanh` modes, you can fine-tune the transition with these parameters:
 

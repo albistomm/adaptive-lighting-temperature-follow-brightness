@@ -156,6 +156,9 @@ The YAML and frontend configuration methods support all of the options listed be
 | `brightness_mode`                           | Brightness mode to use. Possible values are `default`, `linear`, and `tanh` (uses `brightness_mode_time_dark` and `brightness_mode_time_light`). 📈                                                                                                                                                                                                                                           | `default`      | one of `['default', 'linear', 'tanh']`  |
 | `brightness_mode_time_dark`                 | (Ignored if `brightness_mode='default'`) The duration in seconds to ramp up/down the brightness before/after sunrise/sunset. 📈📉                                                                                                                                                                                                                                                             | `900`          | `int`                                   |
 | `brightness_mode_time_light`                | (Ignored if `brightness_mode='default'`) The duration in seconds to ramp up/down the brightness after/before sunrise/sunset. 📈📉.                                                                                                                                                                                                                                                            | `3600`         | `int`                                   |
+| `temperature_mode` | Temperature curve: `default`, `linear`, `tanh`, or `brightness` (follow the brightness curve). Non-default modes ignore `transition_until_sleep` for color outside sleep mode. | `default` | one of `['default', 'linear', 'tanh', 'brightness']` |
+| `temperature_mode_time_dark` | Nonnegative seconds to ramp temperature before sunrise and after sunset. Ignored for `default` and `brightness` temperature modes. | `900` | `int >= 0` |
+| `temperature_mode_time_light` | Nonnegative seconds to ramp temperature after sunrise and before sunset. Ignored for `default` and `brightness` temperature modes. | `3600` | `int >= 0` |
 | `take_over_control`                         | Pause adaptation of individual lights and hand over (manual) control to other sources that issue `light.turn_on` calls for lights that are on. 🔒                                                                                                                                                                                                                                             | `True`         | `bool`                                  |
 | `take_over_control_mode`                    | The adaptation pausing mode when other sources change brightness and/or color of lights. `pause_all` always pauses both brightness and color adaptation. `pause_changed` pauses the adaptation of only the changed attributes and continues adapting unchanged attributes, e.g., continues color adaptation when only brightness was changed.                                                 | `pause_all`    | one of `['pause_all', 'pause_changed']` |
 | `detect_non_ha_changes`                     | Detects and halts adaptations for non-`light.turn_on` state changes. Needs `take_over_control` enabled. 🕵️ Caution: ⚠️ Some lights might falsely indicate an 'on' state, which could result in lights turning on unexpectedly. Note that this calls `homeassistant.update_entity` every `interval`! Disable this feature if you encounter such issues.                                        | `False`        | `bool`                                  |
@@ -881,6 +884,21 @@ Notice the values of `brightness_mode_time_light` and `brightness_mode_time_dark
 
 > Check out the interactive webapp on https://basnijholt.github.io/adaptive-lighting/ to play with the parameters and see how the brightness changes!
 <!-- SECTION:brightness-modes:END -->
+
+### Temperature modes
+
+`temperature_mode: default` retains the original sun-position temperature curve.
+`linear` and `tanh` use the same ramp shapes as brightness, independently
+controlled by `temperature_mode_time_dark` and `temperature_mode_time_light`
+(seconds; defaults 900 and 3600). `brightness` follows the selected brightness
+curve and its timing, scaled between `min_color_temp` and `max_color_temp`;
+its temperature timing settings are ignored. Higher brightness corresponds to
+`max_color_temp`, including when the configured brightness bounds are inverted.
+If both brightness bounds are equal, it follows the selected underlying curve.
+
+Non-default temperature modes ignore `transition_until_sleep` for color outside
+sleep mode, including its RGB transition. Sleep mode still uses its configured
+sleep color and brightness.
 
 <!-- SECTION:see-also:START -->
 ## :eyes: See also
