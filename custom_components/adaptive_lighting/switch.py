@@ -86,7 +86,7 @@ from .adaptation_utils import (
     manual_control_event_attribute_to_flags,
     prepare_adaptation_data,
 )
-from .color_and_brightness import SunLightSettings
+from .color_and_brightness import RampSchedule, SunLightSettings
 from .const import (
     ADAPT_BRIGHTNESS_SWITCH,
     ADAPT_COLOR_SWITCH,
@@ -98,8 +98,10 @@ from .const import (
     CONF_ADAPT_UNTIL_SLEEP,
     CONF_AUTORESET_CONTROL,
     CONF_BRIGHTNESS_MODE,
-    CONF_BRIGHTNESS_MODE_TIME_DARK,
-    CONF_BRIGHTNESS_MODE_TIME_LIGHT,
+    CONF_BRIGHTNESS_MODE_SUNRISE_BEFORE,
+    CONF_BRIGHTNESS_MODE_SUNRISE_END_TIME,
+    CONF_BRIGHTNESS_MODE_SUNSET_BEFORE,
+    CONF_BRIGHTNESS_MODE_SUNSET_END_TIME,
     CONF_DETECT_NON_HA_CHANGES,
     CONF_EXPAND_LIGHT_GROUPS,
     CONF_INCLUDE_CONFIG_IN_ATTRIBUTES,
@@ -136,8 +138,10 @@ from .const import (
     CONF_TAKE_OVER_CONTROL,
     CONF_TAKE_OVER_CONTROL_MODE,
     CONF_TEMPERATURE_MODE,
-    CONF_TEMPERATURE_MODE_TIME_DARK,
-    CONF_TEMPERATURE_MODE_TIME_LIGHT,
+    CONF_TEMPERATURE_MODE_SUNRISE_BEFORE,
+    CONF_TEMPERATURE_MODE_SUNRISE_END_TIME,
+    CONF_TEMPERATURE_MODE_SUNSET_BEFORE,
+    CONF_TEMPERATURE_MODE_SUNSET_END_TIME,
     CONF_TRANSITION,
     CONF_TURN_ON_LIGHTS,
     CONF_USE_DEFAULTS,
@@ -1038,11 +1042,19 @@ class AdaptiveSwitch(SwitchEntity, RestoreEntity):
             min_sunset_time=data[CONF_MIN_SUNSET_TIME],
             max_sunset_time=data[CONF_MAX_SUNSET_TIME],
             brightness_mode=data[CONF_BRIGHTNESS_MODE],
-            brightness_mode_time_dark=data[CONF_BRIGHTNESS_MODE_TIME_DARK],
-            brightness_mode_time_light=data[CONF_BRIGHTNESS_MODE_TIME_LIGHT],
+            brightness_schedule=RampSchedule(
+                sunrise_before=data[CONF_BRIGHTNESS_MODE_SUNRISE_BEFORE],
+                sunrise_end_time=data[CONF_BRIGHTNESS_MODE_SUNRISE_END_TIME],
+                sunset_before=data[CONF_BRIGHTNESS_MODE_SUNSET_BEFORE],
+                sunset_end_time=data[CONF_BRIGHTNESS_MODE_SUNSET_END_TIME],
+            ),
             temperature_mode=data[CONF_TEMPERATURE_MODE],
-            temperature_mode_time_dark=data[CONF_TEMPERATURE_MODE_TIME_DARK],
-            temperature_mode_time_light=data[CONF_TEMPERATURE_MODE_TIME_LIGHT],
+            temperature_schedule=RampSchedule(
+                sunrise_before=data[CONF_TEMPERATURE_MODE_SUNRISE_BEFORE],
+                sunrise_end_time=data[CONF_TEMPERATURE_MODE_SUNRISE_END_TIME],
+                sunset_before=data[CONF_TEMPERATURE_MODE_SUNSET_BEFORE],
+                sunset_end_time=data[CONF_TEMPERATURE_MODE_SUNSET_END_TIME],
+            ),
             timezone=zoneinfo.ZoneInfo(self.hass.config.time_zone),
         )
         _LOGGER.debug(

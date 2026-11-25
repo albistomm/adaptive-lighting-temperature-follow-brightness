@@ -143,7 +143,7 @@
           "sleep_brightness": "Valojen kirkkausmäärä prosenteissa unitilassa (sleep mode).",
           "sleep_color_temp": "Värilämpötila lepotilassa (käytetään, kun `sleep_rgb_or_color_temp` on `color_temp`) kelvineinä. 😴"
         },
-        "description": "Määritä Adaptive Lighting -komponentti. Vaihtoehtojen nimet vastaavat YAML-asetuksia. Jos olet määrittänyt tämän merkinnän YAML:ssa, tässä ei näy vaihtoehtoja. Interaktiiviset kaaviot, jotka esittelevät parametrien vaikutuksia, on [tässä verkkosovelluksessa]({webapp_url}). Lisätietoja löytyy [virallisesta dokumentaatiosta]({docs_url}).",
+        "description": "Custom fork of [Adaptive Lighting](https://github.com/basnijholt/adaptive-lighting), originally created by Bas Nijholt and its contributors.\n\nMääritä Adaptive Lighting -komponentti. Vaihtoehtojen nimet vastaavat YAML-asetuksia. Jos olet määrittänyt tämän merkinnän YAML:ssa, tässä ei näy vaihtoehtoja. Interaktiiviset kaaviot, jotka esittelevät parametrien vaikutuksia, on [tässä verkkosovelluksessa]({webapp_url}). Lisätietoja löytyy [virallisesta dokumentaatiosta]({docs_url}).",
         "data": {
           "lights": "lights: Luettelo ohjattavista valon entity_ids:stä (voi olla tyhjä). 🌟",
           "min_brightness": "min_brightness: Vähittäiskirkkausprosentti. 💡",
@@ -200,7 +200,7 @@
     "step": {
       "user": {
         "title": "Valitse nimi tälle Adaptiivisen Valaistuksen esiintymälle",
-        "description": "Jokainen esiintymä voi sisältää useita valoja!"
+        "description": "Custom fork of [Adaptive Lighting](https://github.com/basnijholt/adaptive-lighting), originally created by Bas Nijholt and its contributors.\n\nJokainen esiintymä voi sisältää useita valoja!"
       }
     },
     "abort": {

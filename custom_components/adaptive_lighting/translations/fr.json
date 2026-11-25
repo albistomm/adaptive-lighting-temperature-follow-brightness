@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "Choisissez un nom pour cette instance d'éclairage adaptatif",
-        "description": "Chaque instance peut contenir plusieurs lumières",
+        "description": "Custom fork of [Adaptive Lighting](https://github.com/basnijholt/adaptive-lighting), originally created by Bas Nijholt and its contributors.\n\nChaque instance peut contenir plusieurs lumières",
         "data": {
           "name": "Nom"
         }
@@ -22,7 +22,7 @@
     "step": {
       "init": {
         "title": "Options d'éclairage adaptatif",
-        "description": "Configurer un composant d'éclairage adaptatif. Les noms correspondent aux paramètres YAML. Si vous avez défini cette entrée en YAML, aucune option n'apparaît ici. Pour les graphiques interactifs qui montrent les effets des paramètres, visiter [cette application web]({webapp_url}). Pour plus de détail, voir la [documentation]({docs_url})",
+        "description": "Custom fork of [Adaptive Lighting](https://github.com/basnijholt/adaptive-lighting), originally created by Bas Nijholt and its contributors.\n\nConfigurer un composant d'éclairage adaptatif. Les noms correspondent aux paramètres YAML. Si vous avez défini cette entrée en YAML, aucune option n'apparaît ici. Pour les graphiques interactifs qui montrent les effets des paramètres, visiter [cette application web]({webapp_url}). Pour plus de détail, voir la [documentation]({docs_url})",
         "data": {
           "lights": "lights : Liste d'\"entity_ids\" de lumières à controller (peu être vide). 🌟",
           "interval": "interval : Temps (en secondes) entre deux mises à jour du commutateur.",

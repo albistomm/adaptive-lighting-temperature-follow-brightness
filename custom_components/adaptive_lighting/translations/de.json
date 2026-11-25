@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "Benenne die Adaptive Beleuchtung Instanz",
-        "description": "Jede Instanz kann mehrere Licht Entitäten beinhalten",
+        "description": "Custom fork of [Adaptive Lighting](https://github.com/basnijholt/adaptive-lighting), originally created by Bas Nijholt and its contributors.\n\nJede Instanz kann mehrere Licht Entitäten beinhalten",
         "data": {
           "name": "Name"
         }
@@ -25,7 +25,7 @@
     "step": {
       "init": {
         "title": "Optionen für Adaptive Beleuchtung",
-        "description": "Alle Einstellungen für eine Adaptive Lighting Komponente. Die Optionsnamen entsprechen den YAML-Einstellungen. Es werden keine Optionen angezeigt, wenn dieser Eintrag in YAML konfiguriert wurde. Interaktive Diagramme zur Veranschaulichung der Auswirkungen der Parameter finden Sie unter [dieser Webanwendung]({webapp_url}). Weitere Details finden Sie in der [offiziellen Dokumentation]({docs_url}).",
+        "description": "Custom fork of [Adaptive Lighting](https://github.com/basnijholt/adaptive-lighting), originally created by Bas Nijholt and its contributors.\n\nAlle Einstellungen für eine Adaptive Lighting Komponente. Die Optionsnamen entsprechen den YAML-Einstellungen. Es werden keine Optionen angezeigt, wenn dieser Eintrag in YAML konfiguriert wurde. Interaktive Diagramme zur Veranschaulichung der Auswirkungen der Parameter finden Sie unter [dieser Webanwendung]({webapp_url}). Weitere Details finden Sie in der [offiziellen Dokumentation]({docs_url}).",
         "data": {
           "lights": "Lichter",
           "interval": "interval, Zeit zwischen Updates des Switches",

@@ -18,8 +18,10 @@ from homeassistant.components.adaptive_lighting.const import (
     CONF_SUNRISE_TIME,
     CONF_SUNSET_TIME,
     CONF_TEMPERATURE_MODE,
-    CONF_TEMPERATURE_MODE_TIME_DARK,
-    CONF_TEMPERATURE_MODE_TIME_LIGHT,
+    CONF_TEMPERATURE_MODE_SUNRISE_BEFORE,
+    CONF_TEMPERATURE_MODE_SUNRISE_END_TIME,
+    CONF_TEMPERATURE_MODE_SUNSET_BEFORE,
+    CONF_TEMPERATURE_MODE_SUNSET_END_TIME,
     DEFAULT_MANUAL_CONTROL_ON_EXTERNAL_TURN_ON,
     DEFAULT_NAME,
     DOMAIN,
@@ -59,7 +61,8 @@ def _advanced_section(result) -> section:
 
 
 @pytest.mark.parametrize(
-    "key", [CONF_TEMPERATURE_MODE_TIME_DARK, CONF_TEMPERATURE_MODE_TIME_LIGHT],
+    "key",
+    [CONF_TEMPERATURE_MODE_SUNRISE_BEFORE, CONF_TEMPERATURE_MODE_SUNSET_BEFORE],
 )
 def test_temperature_duration_validation(key):
     """Zero is supported, while negative ramp durations are rejected."""
@@ -67,6 +70,18 @@ def test_temperature_duration_validation(key):
         assert schema({key: 0})[key] == 0
         with pytest.raises(vol.Invalid):
             schema({key: -1})
+
+
+@pytest.mark.parametrize(
+    "key",
+    [CONF_TEMPERATURE_MODE_SUNRISE_END_TIME, CONF_TEMPERATURE_MODE_SUNSET_END_TIME],
+)
+def test_temperature_end_time_validation(key):
+    """Clock times are validated in YAML and service calls."""
+    for schema in (_DOMAIN_SCHEMA, vol.Schema(change_switch_settings_schema())):
+        schema({key: "09:30:00"})
+        with pytest.raises(vol.Invalid):
+            schema({key: "25:00:00"})
 
 
 async def test_flow_manual_configuration(hass):
@@ -127,8 +142,8 @@ async def test_options(hass):
     advanced_data[CONF_SUNRISE_TIME] = NONE_STR
     advanced_data[CONF_SUNSET_TIME] = NONE_STR
     advanced_data[CONF_TEMPERATURE_MODE] = "tanh"
-    advanced_data[CONF_TEMPERATURE_MODE_TIME_DARK] = 1200
-    advanced_data[CONF_TEMPERATURE_MODE_TIME_LIGHT] = 2400
+    advanced_data[CONF_TEMPERATURE_MODE_SUNRISE_BEFORE] = 1200
+    advanced_data[CONF_TEMPERATURE_MODE_SUNSET_BEFORE] = 2400
     basic_data = {**BASIC_DATA, "min_brightness": 12}
     user_input = {
         **basic_data,

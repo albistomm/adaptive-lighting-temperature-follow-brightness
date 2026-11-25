@@ -418,8 +418,10 @@ adaptive_lighting:
     min_brightness: 10
     max_brightness: 100
     brightness_mode: linear
-    brightness_mode_time_dark: 0
-    brightness_mode_time_light: 21600  # 6 hours
+    brightness_mode_sunrise_before: 0
+    brightness_mode_sunrise_end_time: "22:00:00"
+    brightness_mode_sunset_before: 21600  # 6 hours
+    brightness_mode_sunset_end_time: "04:00:00"
 ```
 
 Adaptive Lighting changes brightness and color while a light is on; it does not manage the light's power schedule. This separate automation turns the example light on and off:

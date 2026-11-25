@@ -17,7 +17,7 @@
           "min_color_temp": "min_color_temp: Temperatura de color més càlida en graus Kelvin. 🔥",
           "max_color_temp": "max_color_temp: Temperatura de color més freda en graus Kelvin. ❄️"
         },
-        "description": "Configura un component d'Adaptive Lighting. Els noms de les opcions s'alineen amb la configuració de YAML. Si has definit aquesta entrada a YAML, aquí no apareixerà cap opció. Per veure gràfics interactius que demostren efectes de paràmetres, visita [aquesta aplicació web]({webapp_url}). Per a més detalls, pots veure la [documentació oficial]({docs_url}).",
+        "description": "Custom fork of [Adaptive Lighting](https://github.com/basnijholt/adaptive-lighting), originally created by Bas Nijholt and its contributors.\n\nConfigura un component d'Adaptive Lighting. Els noms de les opcions s'alineen amb la configuració de YAML. Si has definit aquesta entrada a YAML, aquí no apareixerà cap opció. Per veure gràfics interactius que demostren efectes de paràmetres, visita [aquesta aplicació web]({webapp_url}). Per a més detalls, pots veure la [documentació oficial]({docs_url}).",
         "sections": {
           "advanced": {
             "data": {
@@ -200,7 +200,7 @@
     "step": {
       "user": {
         "title": "Tria un nom per a la instància d'Adaptive Lighting",
-        "description": "Cada instància pot contenir múltiples llums!"
+        "description": "Custom fork of [Adaptive Lighting](https://github.com/basnijholt/adaptive-lighting), originally created by Bas Nijholt and its contributors.\n\nCada instància pot contenir múltiples llums!"
       },
       "menu": {
         "title": "Crear o Duplicar",

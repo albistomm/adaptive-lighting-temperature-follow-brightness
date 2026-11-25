@@ -44,6 +44,8 @@ def _type_to_str(type_: Any) -> str:  # noqa: PLR0911
         return f"`{type_.__name__}`"
     if type_ == cv.boolean:
         return "bool"
+    if type_ is cv.positive_int:
+        return "`int >= 0`"
     if isinstance(type_, vol.All):
         return _format_voluptuous_instance(type_)
     if isinstance(type_, vol.Any):
@@ -54,6 +56,8 @@ def _type_to_str(type_: Any) -> str:  # noqa: PLR0911
         return f"one of `{type_.config['options']}`"
     if isinstance(type_, selector.ColorRGBSelector):
         return "RGB color"
+    if isinstance(type_, selector.TimeSelector):
+        return "time (`HH:MM:SS`)"
     msg = f"Unknown type: {type_}"
     raise ValueError(msg)
 

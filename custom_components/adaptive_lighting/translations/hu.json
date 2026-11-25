@@ -16,7 +16,7 @@
           "max_color_temp": "max_color_temp: A leghidegebb színhőmérséklet kelvinben. ❄️"
         },
         "title": "Adaptív világítás beállításai",
-        "description": "Egy Adaptív világítás komponens konfigurálása. Az opciók nevei a YAML-beállításokhoz igazodnak. Ha ezt a bejegyzést YAML-ben definiálta, itt nem jelennek meg beállítások. A paraméterek hatásait bemutató interaktív grafikonokért látogasson el [erre a webes alkalmazásra]({webapp_url}). További részletekért olvasd el a [hivatalos dokumentációt]({docs_url}).",
+        "description": "Custom fork of [Adaptive Lighting](https://github.com/basnijholt/adaptive-lighting), originally created by Bas Nijholt and its contributors.\n\nEgy Adaptív világítás komponens konfigurálása. Az opciók nevei a YAML-beállításokhoz igazodnak. Ha ezt a bejegyzést YAML-ben definiálta, itt nem jelennek meg beállítások. A paraméterek hatásait bemutató interaktív grafikonokért látogasson el [erre a webes alkalmazásra]({webapp_url}). További részletekért olvasd el a [hivatalos dokumentációt]({docs_url}).",
         "sections": {
           "advanced": {
             "data": {
@@ -200,7 +200,7 @@
     "step": {
       "user": {
         "title": "Válasszon nevet az Adaptív világítás példánynak",
-        "description": "Minden integrációs tétel több lights-t is tartalmazhat!"
+        "description": "Custom fork of [Adaptive Lighting](https://github.com/basnijholt/adaptive-lighting), originally created by Bas Nijholt and its contributors.\n\nMinden integrációs tétel több lights-t is tartalmazhat!"
       }
     },
     "abort": {

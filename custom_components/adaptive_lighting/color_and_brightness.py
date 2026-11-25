@@ -274,6 +274,16 @@ class SunEvents:
 
 
 @dataclass(frozen=True)
+class RampSchedule:
+    """Start each ramp before its sun event and finish at a local clock time."""
+
+    sunrise_before: datetime.timedelta = datetime.timedelta(hours=1)
+    sunrise_end_time: datetime.time = datetime.time(9, 30)
+    sunset_before: datetime.timedelta = datetime.timedelta(minutes=30)
+    sunset_end_time: datetime.time = datetime.time(23)
+
+
+@dataclass(frozen=True)
 class SunLightSettings:
     """Track the state of the sun and associated light settings."""
 
@@ -294,15 +304,13 @@ class SunLightSettings:
     sunset_time: datetime.time | None
     min_sunset_time: datetime.time | None
     max_sunset_time: datetime.time | None
-    brightness_mode_time_dark: datetime.timedelta
-    brightness_mode_time_light: datetime.timedelta
     brightness_mode: Literal["default", "linear", "tanh"] = "default"
     sunrise_offset: datetime.timedelta = datetime.timedelta()
     sunset_offset: datetime.timedelta = datetime.timedelta()
     timezone: datetime.tzinfo = UTC
     temperature_mode: Literal["default", "linear", "tanh", "brightness"] = "default"
-    temperature_mode_time_dark: datetime.timedelta = datetime.timedelta(seconds=900)
-    temperature_mode_time_light: datetime.timedelta = datetime.timedelta(seconds=3600)
+    brightness_schedule: RampSchedule = RampSchedule()
+    temperature_schedule: RampSchedule = RampSchedule()
 
     @cached_property
     def sun(self) -> SunEvents:
@@ -333,35 +341,46 @@ class SunLightSettings:
         self,
         dt: datetime.datetime,
         mode: Literal["linear", "tanh"],
-        time_dark: datetime.timedelta,
-        time_light: datetime.timedelta,
+        schedule: RampSchedule,
         minimum: float,
         maximum: float,
     ) -> float:
-        event, ts_event = self.sun.closest_event(dt)
-        dark = time_dark.total_seconds()
-        light = time_light.total_seconds()
-        elapsed = dt.timestamp() - ts_event
-        if dark == 0 and light == 0:
-            if event == SunEvent.SUNRISE:
-                return maximum if elapsed >= 0 else minimum
-            return minimum if elapsed >= 0 else maximum
+        now = dt.timestamp()
+        candidates: list[tuple[float, SunEvent, datetime.datetime]] = []
+        for event, lead, event_fn in (
+            (SunEvent.SUNRISE, schedule.sunrise_before, self.sun.sunrise),
+            (SunEvent.SUNSET, schedule.sunset_before, self.sun.sunset),
+        ):
+            reference = dt + lead
+            for days in (-2, -1, 0, 1, 2):
+                event_time = event_fn((reference + timedelta(days=days)).date())
+                start = event_time.timestamp() - lead.total_seconds()
+                if start <= now:
+                    candidates.append((start, event, event_time))
+        start, event, event_time = max(candidates, key=lambda candidate: candidate[0])
+        local_event = event_time.astimezone(self.timezone)
         if event == SunEvent.SUNRISE:
-            x1, x2 = -dark, light
-            start, end = minimum, maximum
-            y1, y2 = 0.05, 0.95
-        elif event == SunEvent.SUNSET:
-            x1, x2 = -light, dark
-            start, end = maximum, minimum
-            y1, y2 = 0.95, 0.05
+            end_time = schedule.sunrise_end_time
         else:
-            msg = "Unsupported sun event"
-            raise ValueError(msg)
-        if mode == "linear":
-            value = lerp(elapsed, x1, x2, start, end)
+            end_time = schedule.sunset_end_time
+        end_date = local_event.date()
+        if (
+            event == SunEvent.SUNSET
+            and local_event.time() >= datetime.time(12)
+            and end_time < datetime.time(12)
+        ):
+            end_date += timedelta(days=1)
+        end = datetime.datetime.combine(end_date, end_time, self.timezone).timestamp()
+        end = max(end, event_time.timestamp())
+        if end <= start or now >= end:
+            fraction = 1.0
+        elif mode == "linear":
+            fraction = (now - start) / (end - start)
         else:
-            value = scaled_tanh(elapsed, x1, x2, y1, y2, minimum, maximum)
-        return clamp(value, minimum, maximum)
+            fraction = (scaled_tanh(now, start, end, 0.05, 0.95, 0, 1) - 0.05) / 0.9
+        if event == SunEvent.SUNSET:
+            fraction = 1 - fraction
+        return clamp(minimum + fraction * (maximum - minimum), minimum, maximum)
 
     def brightness_pct(self, dt: datetime.datetime, is_sleep: bool) -> float | None:
         """Calculate the brightness in %."""
@@ -374,8 +393,7 @@ class SunLightSettings:
             return self._ramp(
                 dt,
                 self.brightness_mode,
-                self.brightness_mode_time_dark,
-                self.brightness_mode_time_light,
+                self.brightness_schedule,
                 self.min_brightness,
                 self.max_brightness,
             )
@@ -401,16 +419,14 @@ class SunLightSettings:
             return self.color_temp_kelvin(sun_position)
         if self.temperature_mode == "brightness":
             mode = self.brightness_mode
-            dark = self.brightness_mode_time_dark
-            light = self.brightness_mode_time_light
+            schedule = self.brightness_schedule
         else:
             mode = self.temperature_mode
-            dark = self.temperature_mode_time_dark
-            light = self.temperature_mode_time_light
+            schedule = self.temperature_schedule
         if mode == "default":
             fraction = 1 + min(sun_position, 0)
         else:
-            fraction = self._ramp(dt, mode, dark, light, 0, 1)
+            fraction = self._ramp(dt, mode, schedule, 0, 1)
         if (
             self.temperature_mode == "brightness"
             and self.min_brightness > self.max_brightness

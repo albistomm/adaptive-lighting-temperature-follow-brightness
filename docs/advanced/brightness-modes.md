@@ -26,26 +26,17 @@ Adaptive Lighting supports three brightness modes:
 <details markdown="1">
 <summary>Enhance your control over brightness transitions during sunrise and sunset with <code>brightness_mode</code> (click here to learn more 🧠).</summary>
 
-With Adaptive Lighting, you can set a `brightness_mode` to specify how the brightness changes during sunrise and sunset. The `brightness_mode` can be set to `"default"` ([as illustrated in other graphs above](#high_brightness-brightness)), `"linear"`, or `"tanh"`. If you choose to deviate from the `"default"` mode, you can adjust `brightness_mode_time_dark` and `brightness_mode_time_light` to further customize the lighting transitions.
-
-When `brightness_mode` is set to `"linear"`:
-
-- During **_sunset_**, the brightness begins to gradually decrease from `max_brightness` starting at `time=sunset_time - brightness_mode_time_light`, until it reaches `min_brightness` at `time=sunset_time + brightness_mode_time_dark`.
-- During **_sunrise_**, the brightness begins to gradually increase from `min_brightness` starting at `time=sunrise_time - brightness_mode_time_dark`, until it reaches `max_brightness` at `time=sunrise_time + brightness_mode_time_light`.
-
-When `brightness_mode` is set to `"tanh"`, it uses the smooth transition of a [hyperbolic tangent function](https://mathworld.wolfram.com/HyperbolicTangent.html):
-
-- During **_sunset_**, the brightness starts to decrease from 95% of `max_brightness` starting at `time=sunset_time - brightness_mode_time_light`, until it reaches 5% of `min_brightness` at `time=sunset_time + brightness_mode_time_dark`.
-- During **_sunrise_**, the brightness starts to increase from 5% of `min_brightness` starting at `time=sunrise_time - brightness_mode_time_dark`, until it reaches 95% of `max_brightness` at `time=sunrise_time + brightness_mode_time_light`.
+For `linear` and `tanh`, the sunrise ramp starts `brightness_mode_sunrise_before`
+seconds before sunrise and ends at `brightness_mode_sunrise_end_time`. The sunset
+ramp starts `brightness_mode_sunset_before` seconds before sunset and ends at
+`brightness_mode_sunset_end_time`. Both modes reach the configured endpoints
+exactly; `tanh` uses a smooth S-shaped curve.
 </details>
 
-Notice the values of `brightness_mode_time_light` and `brightness_mode_time_dark` in the text box.
-![image](https://github.com/basnijholt/adaptive-lighting/assets/6897215/15143580-13cd-4ab2-a603-89f2b7830afd)
-![image](https://github.com/basnijholt/adaptive-lighting/assets/6897215/f61fdac9-6d47-48c9-84ed-cbb451d5de5d)
-![image](https://github.com/basnijholt/adaptive-lighting/assets/6897215/e5fc5d27-3c37-4e3d-93d1-6e7cf4b48e7c)
-![image](https://github.com/basnijholt/adaptive-lighting/assets/6897215/3dcbdc42-63c4-49df-8651-d2fae53dd08d)
-
-> Check out the interactive webapp on https://basnijholt.github.io/adaptive-lighting/ to play with the parameters and see how the brightness changes!
+End times use the Home Assistant local time zone and are never earlier than the
+corresponding sun event. For an afternoon/evening sunset, an end time before
+12:00 means the following day. If ramps overlap, the most recently started ramp
+takes precedence.
 
 <!-- OUTPUT:END -->
 
@@ -53,8 +44,9 @@ Notice the values of `brightness_mode_time_light` and `brightness_mode_time_dark
 
 `temperature_mode` defaults to the existing sun-position curve. Set it to
 `linear` or `tanh` to ramp between `min_color_temp` and `max_color_temp` using
-`temperature_mode_time_dark` (default 900 seconds) and
-`temperature_mode_time_light` (default 3600 seconds). Set it to `brightness`
+the four independent `temperature_mode_sunrise_before`, `temperature_mode_sunrise_end_time`,
+`temperature_mode_sunset_before`, and `temperature_mode_sunset_end_time` options.
+Set it to `brightness`
 to follow the selected brightness curve and its timing; the temperature timing
 options are ignored in `default` and `brightness` modes. Higher brightness
 corresponds to `max_color_temp` even with inverted brightness bounds. If the
@@ -70,8 +62,14 @@ When using `linear` or `tanh` modes, you can fine-tune the transition with these
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
-| `brightness_mode_time_dark` | 900 (15 min) | Duration to ramp brightness before/after sunrise/sunset |
-| `brightness_mode_time_light` | 3600 (1 hour) | Duration to ramp brightness after/before sunrise/sunset |
+| `brightness_mode_sunrise_before` | 3600 (1 hour) | Start before sunrise |
+| `brightness_mode_sunrise_end_time` | 09:30 | Sunrise ramp end |
+| `brightness_mode_sunset_before` | 1800 (30 min) | Start before sunset |
+| `brightness_mode_sunset_end_time` | 23:00 | Sunset ramp end |
+
+These settings replace `brightness_mode_time_dark`, `brightness_mode_time_light`,
+`temperature_mode_time_dark`, and `temperature_mode_time_light`. Remove the old
+settings from YAML; previously saved UI values no longer affect the ramp.
 
 ## Example Configurations
 
@@ -83,8 +81,10 @@ adaptive_lighting:
     lights:
       - light.living_room
     brightness_mode: linear
-    brightness_mode_time_dark: 600    # 10 minutes
-    brightness_mode_time_light: 1800  # 30 minutes
+    brightness_mode_sunrise_before: 600    # 10 minutes
+    brightness_mode_sunrise_end_time: "09:30:00"
+    brightness_mode_sunset_before: 1800    # 30 minutes
+    brightness_mode_sunset_end_time: "23:00:00"
 ```
 
 ### Smooth Transition (Tanh)
@@ -95,8 +95,10 @@ adaptive_lighting:
     lights:
       - light.bedroom
     brightness_mode: tanh
-    brightness_mode_time_dark: 1200   # 20 minutes
-    brightness_mode_time_light: 3600  # 1 hour
+    brightness_mode_sunrise_before: 1200   # 20 minutes
+    brightness_mode_sunrise_end_time: "09:30:00"
+    brightness_mode_sunset_before: 3600    # 1 hour
+    brightness_mode_sunset_end_time: "23:00:00"
 ```
 
 ## Graphs
@@ -134,4 +136,4 @@ The best way to understand brightness modes is to experiment with the interactiv
   </a>
 </div>
 
-Adjust the `brightness_mode`, `brightness_mode_time_dark`, and `brightness_mode_time_light` parameters to see how they affect the brightness curve in real-time.
+The upstream simulator shows the original ramp timings, not this fork's clock-time schedules.

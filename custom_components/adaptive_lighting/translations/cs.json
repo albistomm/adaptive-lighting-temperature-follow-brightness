@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "Vyberte název instance Adaptivního osvětlení",
-        "description": "Vyberte název pro tuto instanci. Můžete spustit několik instancí Adaptivního osvětlení, každá z nich může obsahovat více světel!",
+        "description": "Custom fork of [Adaptive Lighting](https://github.com/basnijholt/adaptive-lighting), originally created by Bas Nijholt and its contributors.\n\nVyberte název pro tuto instanci. Můžete spustit několik instancí Adaptivního osvětlení, každá z nich může obsahovat více světel!",
         "data": {
           "name": "Název"
         }
@@ -22,7 +22,7 @@
     "step": {
       "init": {
         "title": "Nastavení Adaptivního osvětlení",
-        "description": "Nakonfigurujte komponentu Adaptive Lighting. Názvy voleb odpovídají nastavení YAML. Pokud je tato položka definována v YAML, žádné volby se zde nezobrazí. Interaktivní grafy znázorňující vliv parametrů najdete v [této webové aplikaci]({webapp_url}). Další podrobnosti najdete v [oficiální dokumentaci]({docs_url}).",
+        "description": "Custom fork of [Adaptive Lighting](https://github.com/basnijholt/adaptive-lighting), originally created by Bas Nijholt and its contributors.\n\nNakonfigurujte komponentu Adaptive Lighting. Názvy voleb odpovídají nastavení YAML. Pokud je tato položka definována v YAML, žádné volby se zde nezobrazí. Interaktivní grafy znázorňující vliv parametrů najdete v [této webové aplikaci]({webapp_url}). Další podrobnosti najdete v [oficiální dokumentaci]({docs_url}).",
         "data": {
           "lights": "lights: Seznam světel (entity_id), které mají být ovládané (může být prázdný). 🌟",
           "interval": "interval: Prodleva pro změny osvětlení (v sekundách)",

@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "description": "Fiecare instanţă poate conţine mai multe lumini!",
+        "description": "Custom fork of [Adaptive Lighting](https://github.com/basnijholt/adaptive-lighting), originally created by Bas Nijholt and its contributors.\n\nFiecare instanţă poate conţine mai multe lumini!",
         "title": "Alege un nume pentru instanța de Iluminare Adaptivă"
       }
     },

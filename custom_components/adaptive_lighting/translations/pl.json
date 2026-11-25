@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "Wybierz nazwę dla tej instancji Adaptacyjnego oświetlenia",
-        "description": "Każda instancja może zawierać wiele świateł.",
+        "description": "Custom fork of [Adaptive Lighting](https://github.com/basnijholt/adaptive-lighting), originally created by Bas Nijholt and its contributors.\n\nKażda instancja może zawierać wiele świateł.",
         "data": {
           "name": "Nazwa"
         }
@@ -18,7 +18,7 @@
     "step": {
       "init": {
         "title": "Opcje adaptacyjnego oświetlenia",
-        "description": "Konfiguracja komponentu Adaptacyjnego oświetlenia. Nazwy opcji odpowiadają ustawieniom YAML. Żadne opcje nie są wyświetlane, jeśli są zdefiniowane w konfiguracji YAML. Aby zobaczyć interaktywne wykresy demonstrujące działanie parametrów odwiedź [tą aplikację webową]({webapp_url}). Aby zobaczyć więcej szczegółów odwiedź [oficjalną dokumentację]({docs_url}).",
+        "description": "Custom fork of [Adaptive Lighting](https://github.com/basnijholt/adaptive-lighting), originally created by Bas Nijholt and its contributors.\n\nKonfiguracja komponentu Adaptacyjnego oświetlenia. Nazwy opcji odpowiadają ustawieniom YAML. Żadne opcje nie są wyświetlane, jeśli są zdefiniowane w konfiguracji YAML. Aby zobaczyć interaktywne wykresy demonstrujące działanie parametrów odwiedź [tą aplikację webową]({webapp_url}). Aby zobaczyć więcej szczegółów odwiedź [oficjalną dokumentację]({docs_url}).",
         "data": {
           "lights": "lights: Lista `entity_id`, które mają być kontrolowane (może być pusta). 🌟",
           "interval": "interval: Time between switch updates. (sekund)",

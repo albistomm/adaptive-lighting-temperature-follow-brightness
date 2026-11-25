@@ -16,7 +16,7 @@
           "sleep_color_temp": "Teplota svetla (v ˚K) v režime spánku (pokiaľ `sleep_rgb_or_color_temp` je `color_temp`). 😴"
         },
         "title": "Nastavenia Adaptívneho osvetlenia",
-        "description": "Nastavte komponentu Adaptívneho osvetlenia. Názvy nastavení sú zhodné s názvami v súbore YAML. Ak ste túto položku nastavili už v YAML, tak tu sa nezobrazia žiadne možnosti nastavenia. Interaktívne grafy, ktoré zobrazujú vplyv nastavení, nájdete na [tejto webovej aplikácii]({webapp_url}). Ďalšie informácie nájdete v [oficiálnej dokumentácii]({docs_url}).",
+        "description": "Custom fork of [Adaptive Lighting](https://github.com/basnijholt/adaptive-lighting), originally created by Bas Nijholt and its contributors.\n\nNastavte komponentu Adaptívneho osvetlenia. Názvy nastavení sú zhodné s názvami v súbore YAML. Ak ste túto položku nastavili už v YAML, tak tu sa nezobrazia žiadne možnosti nastavenia. Interaktívne grafy, ktoré zobrazujú vplyv nastavení, nájdete na [tejto webovej aplikácii]({webapp_url}). Ďalšie informácie nájdete v [oficiálnej dokumentácii]({docs_url}).",
         "sections": {
           "advanced": {
             "data": {
@@ -65,7 +65,7 @@
   "config": {
     "step": {
       "user": {
-        "description": "Každá inštancia môže obsahovať viacero svetiel!",
+        "description": "Custom fork of [Adaptive Lighting](https://github.com/basnijholt/adaptive-lighting), originally created by Bas Nijholt and its contributors.\n\nKaždá inštancia môže obsahovať viacero svetiel!",
         "title": "Vyberte názov inštancie Adaptívneho osvetlenia",
         "data": {
           "name": "Názov"

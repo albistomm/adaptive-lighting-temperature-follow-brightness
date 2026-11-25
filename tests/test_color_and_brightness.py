@@ -8,6 +8,7 @@ from astral import LocationInfo
 from astral.location import Location
 from homeassistant.components.adaptive_lighting.color_and_brightness import (
     _POLAR_SUN_EVENT_OFFSET,
+    RampSchedule,
     SunEvent,
     SunEvents,
     SunLightSettings,
@@ -276,8 +277,6 @@ def _make_brightness_settings(
         sunset_time=None,
         min_sunset_time=None,
         max_sunset_time=None,
-        brightness_mode_time_dark=dt.timedelta(minutes=30),
-        brightness_mode_time_light=dt.timedelta(minutes=30),
         brightness_mode=brightness_mode,
         timezone=tzinfo,
     )
@@ -350,12 +349,27 @@ def test_temperature_ramp(tzinfo_and_location, mode, event):
             brightness_mode="default",
         ),
         temperature_mode=mode,
-        temperature_mode_time_dark=dt.timedelta(minutes=20),
-        temperature_mode_time_light=dt.timedelta(minutes=40),
     )
     event_time = getattr(settings.sun, event)(dt.date(2022, 6, 1))
     offsets = (-20, 40) if event == "sunrise" else (-40, 20)
-    fractions = (0, 1) if mode == "linear" else (0.05, 0.95)
+    if event == "sunrise":
+        schedule = replace(
+            settings.temperature_schedule,
+            sunrise_before=dt.timedelta(minutes=20),
+            sunrise_end_time=(event_time + dt.timedelta(minutes=40))
+            .astimezone(tzinfo)
+            .time(),
+        )
+    else:
+        schedule = replace(
+            settings.temperature_schedule,
+            sunset_before=dt.timedelta(minutes=40),
+            sunset_end_time=(event_time + dt.timedelta(minutes=20))
+            .astimezone(tzinfo)
+            .time(),
+        )
+    settings = replace(settings, temperature_schedule=schedule)
+    fractions = (0, 1)
     if event == "sunset":
         fractions = fractions[::-1]
     for offset, fraction in zip(offsets, fractions, strict=True):
@@ -390,7 +404,10 @@ def test_temperature_curve_with_inverted_bounds(tzinfo_and_location, mode):
 @pytest.mark.parametrize("mode", ["default", "linear", "tanh"])
 @pytest.mark.parametrize(("minimum", "maximum"), [(10, 90), (90, 10), (50, 50)])
 def test_temperature_follows_brightness_curve(
-    tzinfo_and_location, mode, minimum, maximum,
+    tzinfo_and_location,
+    mode,
+    minimum,
+    maximum,
 ):
     tzinfo, location = tzinfo_and_location
     settings = replace(
@@ -402,8 +419,10 @@ def test_temperature_follows_brightness_curve(
             brightness_mode=mode,
         ),
         temperature_mode="brightness",
-        temperature_mode_time_dark=dt.timedelta(hours=3),
-        temperature_mode_time_light=dt.timedelta(hours=4),
+        temperature_schedule=RampSchedule(
+            sunrise_before=dt.timedelta(hours=3),
+            sunset_before=dt.timedelta(hours=4),
+        ),
     )
     reference = replace(settings, min_brightness=0, max_brightness=100)
     for event in ("sunrise", "sunset"):
@@ -421,7 +440,8 @@ def test_temperature_follows_brightness_curve(
 
 @pytest.mark.parametrize("mode", ["linear", "tanh", "brightness"])
 def test_temperature_curve_overrides_until_sleep_not_sleep_mode(
-    tzinfo_and_location, mode,
+    tzinfo_and_location,
+    mode,
 ):
     tzinfo, location = tzinfo_and_location
     settings = replace(
@@ -458,10 +478,16 @@ def test_zero_duration_temperature_ramp(tzinfo_and_location, mode):
             brightness_mode="default",
         ),
         temperature_mode=mode,
-        temperature_mode_time_dark=dt.timedelta(),
-        temperature_mode_time_light=dt.timedelta(),
     )
     sunrise = settings.sun.sunrise(dt.date(2022, 6, 1))
+    settings = replace(
+        settings,
+        temperature_schedule=replace(
+            settings.temperature_schedule,
+            sunrise_before=dt.timedelta(),
+            sunrise_end_time=sunrise.astimezone(tzinfo).time(),
+        ),
+    )
     assert (
         settings.brightness_and_color(sunrise - dt.timedelta(seconds=1), False)[
             "color_temp_kelvin"
@@ -469,6 +495,143 @@ def test_zero_duration_temperature_ramp(tzinfo_and_location, mode):
         == 2000
     )
     assert settings.brightness_and_color(sunrise, False)["color_temp_kelvin"] == 6500
+
+
+def _fixed_ramp_settings(mode):
+    settings = _make_brightness_settings(
+        dt.UTC,
+        location,
+        min_brightness=10,
+        max_brightness=90,
+        brightness_mode=mode,
+    )
+    return replace(
+        settings,
+        sunrise_time=dt.time(6),
+        sunset_time=dt.time(18),
+        brightness_schedule=RampSchedule(),
+    )
+
+
+@pytest.mark.parametrize("mode", ["linear", "tanh"])
+@pytest.mark.parametrize(
+    ("hour", "minute", "expected"),
+    [(5, 0, 10), (7, 15, 50), (9, 30, 90), (17, 30, 90), (20, 15, 50), (23, 0, 10)],
+)
+def test_fixed_clock_brightness_ramp(mode, hour, minute, expected):
+    settings = _fixed_ramp_settings(mode)
+    now = dt.datetime(2022, 6, 1, hour, minute, tzinfo=dt.UTC)
+    assert settings.brightness_pct(now, False) == pytest.approx(expected)
+
+
+def test_tanh_uses_a_smooth_curve_between_exact_endpoints():
+    now = dt.datetime(2022, 6, 1, 6, 7, 30, tzinfo=dt.UTC)
+    linear = _fixed_ramp_settings("linear").brightness_pct(now, False)
+    tanh = _fixed_ramp_settings("tanh").brightness_pct(now, False)
+    assert 10 < tanh < linear
+
+
+@pytest.mark.parametrize("mode", ["linear", "tanh"])
+@pytest.mark.parametrize(
+    ("end_field", "end_time", "hour", "minute", "expected"),
+    [
+        ("sunrise_end_time", dt.time(5, 30), 5, 30, 50),
+        ("sunrise_end_time", dt.time(5, 30), 6, 0, 90),
+        ("sunset_end_time", dt.time(17), 17, 45, 50),
+        ("sunset_end_time", dt.time(17), 18, 0, 10),
+    ],
+)
+def test_ramp_end_clamped_to_later_sun_event(
+    mode, end_field, end_time, hour, minute, expected,
+):
+    settings = _fixed_ramp_settings(mode)
+    settings = replace(
+        settings,
+        brightness_schedule=replace(
+            settings.brightness_schedule, **{end_field: end_time},
+        ),
+    )
+    now = dt.datetime(2022, 6, 1, hour, minute, tzinfo=dt.UTC)
+    assert settings.brightness_pct(now, False) == pytest.approx(expected)
+
+
+@pytest.mark.parametrize("mode", ["linear", "tanh"])
+def test_sunset_ramp_completes_after_midnight(mode):
+    settings = _fixed_ramp_settings(mode)
+    settings = replace(
+        settings,
+        brightness_schedule=replace(
+            settings.brightness_schedule,
+            sunset_end_time=dt.time(1),
+        ),
+    )
+    assert (
+        settings.brightness_pct(dt.datetime(2022, 6, 2, 0, 30, tzinfo=dt.UTC), False)
+        > 10
+    )
+    assert (
+        settings.brightness_pct(dt.datetime(2022, 6, 2, 1, tzinfo=dt.UTC), False) == 10
+    )
+
+
+def test_brightness_and_temperature_have_independent_schedules():
+    settings = replace(
+        _fixed_ramp_settings("linear"),
+        temperature_mode="linear",
+        temperature_schedule=RampSchedule(
+            sunrise_before=dt.timedelta(hours=2),
+            sunrise_end_time=dt.time(8),
+            sunset_before=dt.timedelta(hours=1),
+            sunset_end_time=dt.time(20),
+        ),
+    )
+    now = dt.datetime(2022, 6, 1, 7, tzinfo=dt.UTC)
+    values = settings.brightness_and_color(now, False)
+    assert values["brightness_pct"] == pytest.approx(10 + 80 * 2 / 4.5)
+    assert values["color_temp_kelvin"] == 5375
+
+
+def test_ramp_clock_time_uses_local_timezone_across_dst():
+    zone = zoneinfo.ZoneInfo("America/New_York")
+    settings = replace(
+        _fixed_ramp_settings("linear"),
+        timezone=zone,
+        sunrise_time=dt.time(3),
+        brightness_schedule=RampSchedule(
+            sunrise_before=dt.timedelta(hours=2),
+            sunrise_end_time=dt.time(4),
+        ),
+    )
+    assert settings.brightness_pct(
+        dt.datetime(2022, 3, 13, 1, 30, tzinfo=zone),
+        False,
+    ) == pytest.approx(50)
+    assert (
+        settings.brightness_pct(dt.datetime(2022, 3, 13, 4, tzinfo=zone), False) == 90
+    )
+
+
+def test_virtual_sunset_after_midnight_uses_same_day_end():
+    settings = replace(
+        _fixed_ramp_settings("linear"),
+        sunrise_time=dt.time(16),
+        sunset_time=dt.time(4),
+        brightness_schedule=RampSchedule(
+            sunrise_before=dt.timedelta(),
+            sunrise_end_time=dt.time(22),
+            sunset_before=dt.timedelta(hours=6),
+            sunset_end_time=dt.time(4),
+        ),
+    )
+    assert (
+        settings.brightness_pct(dt.datetime(2022, 6, 1, 16, tzinfo=dt.UTC), False) == 10
+    )
+    assert (
+        settings.brightness_pct(dt.datetime(2022, 6, 1, 22, tzinfo=dt.UTC), False) == 90
+    )
+    assert (
+        settings.brightness_pct(dt.datetime(2022, 6, 2, 4, tzinfo=dt.UTC), False) == 10
+    )
 
 
 # Tromsø, Norway (69.6°N) has polar night (Nov-Jan) and midnight sun (May-Jul).
@@ -670,8 +833,6 @@ def test_brightness_and_color_on_polar_days(date):
         sunset_time=None,
         min_sunset_time=None,
         max_sunset_time=None,
-        brightness_mode_time_dark=dt.timedelta(hours=1),
-        brightness_mode_time_light=dt.timedelta(hours=1),
         timezone=zoneinfo.ZoneInfo("Europe/Oslo"),
     )
     datetime = dt.datetime(date.year, date.month, date.day, tzinfo=dt.timezone.utc)

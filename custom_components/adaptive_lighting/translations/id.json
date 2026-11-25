@@ -150,7 +150,7 @@
           "max_color_temp": "max_color_temp: Suhu warna terdingin dalam Kelvin. ❄️"
         },
         "title": "Opsi Pencahayaan Adaptif",
-        "description": "Konfigurasikan komponen Pencahayaan Adaptif. Nama opsi selaras dengan pengaturan YAML. Jika Anda telah menentukan entri ini di YAML, tidak ada opsi yang akan muncul di sini. Untuk grafik interaktif yang menunjukkan efek parameter, kunjungi [aplikasi web ini]({webapp_url}). Untuk detail lebih lanjut, lihat [dokumentasi resmi]({docs_url}).",
+        "description": "Custom fork of [Adaptive Lighting](https://github.com/basnijholt/adaptive-lighting), originally created by Bas Nijholt and its contributors.\n\nKonfigurasikan komponen Pencahayaan Adaptif. Nama opsi selaras dengan pengaturan YAML. Jika Anda telah menentukan entri ini di YAML, tidak ada opsi yang akan muncul di sini. Untuk grafik interaktif yang menunjukkan efek parameter, kunjungi [aplikasi web ini]({webapp_url}). Untuk detail lebih lanjut, lihat [dokumentasi resmi]({docs_url}).",
         "sections": {
           "advanced": {
             "data": {
@@ -199,7 +199,7 @@
   "config": {
     "step": {
       "user": {
-        "description": "Setiap instance dapat berisi banyak lampu!",
+        "description": "Custom fork of [Adaptive Lighting](https://github.com/basnijholt/adaptive-lighting), originally created by Bas Nijholt and its contributors.\n\nSetiap instance dapat berisi banyak lampu!",
         "title": "Pilih nama untuk instance Pencahayaan Adaptif"
       }
     },

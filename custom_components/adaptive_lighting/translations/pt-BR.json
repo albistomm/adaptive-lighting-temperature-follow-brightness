@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "Escolha um nome para a instância da Iluminação Adaptativa",
-        "description": "Escolha um nome para esta instância. Você pode executar várias instâncias de iluminação adaptativa, cada uma delas pode conter várias luzes!",
+        "description": "Custom fork of [Adaptive Lighting](https://github.com/basnijholt/adaptive-lighting), originally created by Bas Nijholt and its contributors.\n\nEscolha um nome para esta instância. Você pode executar várias instâncias de iluminação adaptativa, cada uma delas pode conter várias luzes!",
         "data": {
           "name": "Nome"
         }
@@ -25,7 +25,7 @@
     "step": {
       "init": {
         "title": "Opções da iluminação adaptiva",
-        "description": "Todas as configurações de um componente de iluminação adaptativa. Os nomes das opções correspondem às configurações de YAML. Nenhuma opção será exibida se você tiver a entrada adaptive_lighting definida em sua configuração YAML. Para gráficos interativos que demonstram os efeitos dos parâmetros, acesse [este aplicativo web]({webapp_url}). Para mais detalhes, consulte a [documentação oficial]({docs_url}).",
+        "description": "Custom fork of [Adaptive Lighting](https://github.com/basnijholt/adaptive-lighting), originally created by Bas Nijholt and its contributors.\n\nTodas as configurações de um componente de iluminação adaptativa. Os nomes das opções correspondem às configurações de YAML. Nenhuma opção será exibida se você tiver a entrada adaptive_lighting definida em sua configuração YAML. Para gráficos interativos que demonstram os efeitos dos parâmetros, acesse [este aplicativo web]({webapp_url}). Para mais detalhes, consulte a [documentação oficial]({docs_url}).",
         "data": {
           "lights": "luzes",
           "interval": "interval: Tempo entre as atualizações do switch. (segundos)",

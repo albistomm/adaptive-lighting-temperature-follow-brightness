@@ -218,7 +218,7 @@ change_switch_settings:
       selector:
         time: null
     temperature_mode:
-      description: 'Temperature curve: `default`, `linear`, `tanh`, or `brightness` (follow the brightness curve). Non-default modes ignore `transition_until_sleep` for color outside sleep mode.'
+      description: 'Temperature curve: `default`, `linear`, `tanh`, or `brightness` (follow the brightness curve). Non-default modes ignore `transition_until_sleep` for color outside sleep mode. Ramp settings apply only to `linear` and `tanh`.'
       required: false
       example: default
       selector:
@@ -228,18 +228,64 @@ change_switch_settings:
           - linear
           - tanh
           - brightness
-    temperature_mode_time_dark:
-      description: Nonnegative seconds to ramp temperature before sunrise and after sunset. Ignored for `default` and `brightness` temperature modes.
+    brightness_mode:
+      description: Brightness mode to use. Possible values are `default`, `linear`, and `tanh` (uses the sunrise and sunset ramp settings). 📈
       required: false
-      example: 900
+      example: linear
       selector:
-        text: null
-    temperature_mode_time_light:
-      description: Nonnegative seconds to ramp temperature after sunrise and before sunset. Ignored for `default` and `brightness` temperature modes.
+        select:
+          options:
+          - default
+          - linear
+          - tanh
+    brightness_mode_sunrise_before:
+      description: Seconds before sunrise to start the brightness ramp (linear and tanh modes).
       required: false
       example: 3600
       selector:
         text: null
+    brightness_mode_sunrise_end_time:
+      description: Local time to finish the sunrise brightness ramp, no earlier than sunrise.
+      required: false
+      example: '09:30:00'
+      selector:
+        time: null
+    brightness_mode_sunset_before:
+      description: Seconds before sunset to start the brightness ramp (linear and tanh modes).
+      required: false
+      example: 1800
+      selector:
+        text: null
+    brightness_mode_sunset_end_time:
+      description: Local time to finish the sunset brightness ramp, no earlier than sunset. For an afternoon/evening sunset, times before noon mean the next day.
+      required: false
+      example: '23:00:00'
+      selector:
+        time: null
+    temperature_mode_sunrise_before:
+      description: Seconds before sunrise to start the temperature ramp (linear and tanh modes).
+      required: false
+      example: 3600
+      selector:
+        text: null
+    temperature_mode_sunrise_end_time:
+      description: Local time to finish the sunrise temperature ramp, no earlier than sunrise.
+      required: false
+      example: '09:30:00'
+      selector:
+        time: null
+    temperature_mode_sunset_before:
+      description: Seconds before sunset to start the temperature ramp (linear and tanh modes).
+      required: false
+      example: 1800
+      selector:
+        text: null
+    temperature_mode_sunset_end_time:
+      description: Local time to finish the sunset temperature ramp, no earlier than sunset. For an afternoon/evening sunset, times before noon mean the next day.
+      required: false
+      example: '23:00:00'
+      selector:
+        time: null
     min_sunset_time:
       description: Set the earliest virtual sunset time (HH:MM:SS), allowing for later sunsets. 🌇
       example: ''

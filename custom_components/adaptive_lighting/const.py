@@ -187,46 +187,73 @@ DOCS[CONF_MAX_SUNSET_TIME] = (
 CONF_BRIGHTNESS_MODE, DEFAULT_BRIGHTNESS_MODE = "brightness_mode", "default"
 DOCS[CONF_BRIGHTNESS_MODE] = (
     "Brightness mode to use. Possible values are `default`, `linear`, and `tanh` "
-    "(uses `brightness_mode_time_dark` and `brightness_mode_time_light`). 📈"
+    "(uses the sunrise and sunset ramp settings). 📈"
 )
-CONF_BRIGHTNESS_MODE_TIME_DARK, DEFAULT_BRIGHTNESS_MODE_TIME_DARK = (
-    "brightness_mode_time_dark",
-    900,
-)
-DOCS[CONF_BRIGHTNESS_MODE_TIME_DARK] = (
-    "(Ignored if `brightness_mode='default'`) The duration in seconds to ramp up/down "
-    "the brightness before/after sunrise/sunset. 📈📉"
-)
-CONF_BRIGHTNESS_MODE_TIME_LIGHT, DEFAULT_BRIGHTNESS_MODE_TIME_LIGHT = (
-    "brightness_mode_time_light",
+CONF_BRIGHTNESS_MODE_SUNRISE_BEFORE, DEFAULT_BRIGHTNESS_MODE_SUNRISE_BEFORE = (
+    "brightness_mode_sunrise_before",
     3600,
 )
-DOCS[CONF_BRIGHTNESS_MODE_TIME_LIGHT] = (
-    "(Ignored if `brightness_mode='default'`) The duration in seconds to ramp up/down "
-    "the brightness after/before sunrise/sunset. 📈📉."
+DOCS[CONF_BRIGHTNESS_MODE_SUNRISE_BEFORE] = (
+    "Seconds before sunrise to start the brightness ramp (linear and tanh modes)."
+)
+CONF_BRIGHTNESS_MODE_SUNRISE_END_TIME, DEFAULT_BRIGHTNESS_MODE_SUNRISE_END_TIME = (
+    "brightness_mode_sunrise_end_time",
+    "09:30:00",
+)
+DOCS[CONF_BRIGHTNESS_MODE_SUNRISE_END_TIME] = (
+    "Local time to finish the sunrise brightness ramp, no earlier than sunrise."
+)
+CONF_BRIGHTNESS_MODE_SUNSET_BEFORE, DEFAULT_BRIGHTNESS_MODE_SUNSET_BEFORE = (
+    "brightness_mode_sunset_before",
+    1800,
+)
+DOCS[CONF_BRIGHTNESS_MODE_SUNSET_BEFORE] = (
+    "Seconds before sunset to start the brightness ramp (linear and tanh modes)."
+)
+CONF_BRIGHTNESS_MODE_SUNSET_END_TIME, DEFAULT_BRIGHTNESS_MODE_SUNSET_END_TIME = (
+    "brightness_mode_sunset_end_time",
+    "23:00:00",
+)
+DOCS[CONF_BRIGHTNESS_MODE_SUNSET_END_TIME] = (
+    "Local time to finish the sunset brightness ramp, no earlier than sunset. "
+    "For an afternoon/evening sunset, times before noon mean the next day."
 )
 
 CONF_TEMPERATURE_MODE, DEFAULT_TEMPERATURE_MODE = "temperature_mode", "default"
 DOCS[CONF_TEMPERATURE_MODE] = (
     "Temperature curve: `default`, `linear`, `tanh`, or `brightness` "
     "(follow the brightness curve). Non-default modes ignore "
-    "`transition_until_sleep` for color outside sleep mode."
+    "`transition_until_sleep` for color outside sleep mode. Ramp settings apply "
+    "only to `linear` and `tanh`."
 )
-CONF_TEMPERATURE_MODE_TIME_DARK, DEFAULT_TEMPERATURE_MODE_TIME_DARK = (
-    "temperature_mode_time_dark",
-    900,
-)
-DOCS[CONF_TEMPERATURE_MODE_TIME_DARK] = (
-    "Nonnegative seconds to ramp temperature before sunrise and after sunset. "
-    "Ignored for `default` and `brightness` temperature modes."
-)
-CONF_TEMPERATURE_MODE_TIME_LIGHT, DEFAULT_TEMPERATURE_MODE_TIME_LIGHT = (
-    "temperature_mode_time_light",
+CONF_TEMPERATURE_MODE_SUNRISE_BEFORE, DEFAULT_TEMPERATURE_MODE_SUNRISE_BEFORE = (
+    "temperature_mode_sunrise_before",
     3600,
 )
-DOCS[CONF_TEMPERATURE_MODE_TIME_LIGHT] = (
-    "Nonnegative seconds to ramp temperature after sunrise and before sunset. "
-    "Ignored for `default` and `brightness` temperature modes."
+DOCS[CONF_TEMPERATURE_MODE_SUNRISE_BEFORE] = (
+    "Seconds before sunrise to start the temperature ramp (linear and tanh modes)."
+)
+CONF_TEMPERATURE_MODE_SUNRISE_END_TIME, DEFAULT_TEMPERATURE_MODE_SUNRISE_END_TIME = (
+    "temperature_mode_sunrise_end_time",
+    "09:30:00",
+)
+DOCS[CONF_TEMPERATURE_MODE_SUNRISE_END_TIME] = (
+    "Local time to finish the sunrise temperature ramp, no earlier than sunrise."
+)
+CONF_TEMPERATURE_MODE_SUNSET_BEFORE, DEFAULT_TEMPERATURE_MODE_SUNSET_BEFORE = (
+    "temperature_mode_sunset_before",
+    1800,
+)
+DOCS[CONF_TEMPERATURE_MODE_SUNSET_BEFORE] = (
+    "Seconds before sunset to start the temperature ramp (linear and tanh modes)."
+)
+CONF_TEMPERATURE_MODE_SUNSET_END_TIME, DEFAULT_TEMPERATURE_MODE_SUNSET_END_TIME = (
+    "temperature_mode_sunset_end_time",
+    "23:00:00",
+)
+DOCS[CONF_TEMPERATURE_MODE_SUNSET_END_TIME] = (
+    "Local time to finish the sunset temperature ramp, no earlier than sunset. "
+    "For an afternoon/evening sunset, times before noon mean the next day."
 )
 
 CONF_TAKE_OVER_CONTROL, DEFAULT_TAKE_OVER_CONTROL = "take_over_control", True
@@ -432,8 +459,26 @@ VALIDATION_TUPLES: list[tuple[str, Any, Any]] = [
             ),
         ),
     ),
-    (CONF_BRIGHTNESS_MODE_TIME_DARK, DEFAULT_BRIGHTNESS_MODE_TIME_DARK, int),
-    (CONF_BRIGHTNESS_MODE_TIME_LIGHT, DEFAULT_BRIGHTNESS_MODE_TIME_LIGHT, int),
+    (
+        CONF_BRIGHTNESS_MODE_SUNRISE_BEFORE,
+        DEFAULT_BRIGHTNESS_MODE_SUNRISE_BEFORE,
+        cv.positive_int,
+    ),
+    (
+        CONF_BRIGHTNESS_MODE_SUNRISE_END_TIME,
+        DEFAULT_BRIGHTNESS_MODE_SUNRISE_END_TIME,
+        selector.TimeSelector(),
+    ),
+    (
+        CONF_BRIGHTNESS_MODE_SUNSET_BEFORE,
+        DEFAULT_BRIGHTNESS_MODE_SUNSET_BEFORE,
+        cv.positive_int,
+    ),
+    (
+        CONF_BRIGHTNESS_MODE_SUNSET_END_TIME,
+        DEFAULT_BRIGHTNESS_MODE_SUNSET_END_TIME,
+        selector.TimeSelector(),
+    ),
     (
         CONF_TEMPERATURE_MODE,
         DEFAULT_TEMPERATURE_MODE,
@@ -446,14 +491,24 @@ VALIDATION_TUPLES: list[tuple[str, Any, Any]] = [
         ),
     ),
     (
-        CONF_TEMPERATURE_MODE_TIME_DARK,
-        DEFAULT_TEMPERATURE_MODE_TIME_DARK,
+        CONF_TEMPERATURE_MODE_SUNRISE_BEFORE,
+        DEFAULT_TEMPERATURE_MODE_SUNRISE_BEFORE,
         cv.positive_int,
     ),
     (
-        CONF_TEMPERATURE_MODE_TIME_LIGHT,
-        DEFAULT_TEMPERATURE_MODE_TIME_LIGHT,
+        CONF_TEMPERATURE_MODE_SUNRISE_END_TIME,
+        DEFAULT_TEMPERATURE_MODE_SUNRISE_END_TIME,
+        selector.TimeSelector(),
+    ),
+    (
+        CONF_TEMPERATURE_MODE_SUNSET_BEFORE,
+        DEFAULT_TEMPERATURE_MODE_SUNSET_BEFORE,
         cv.positive_int,
+    ),
+    (
+        CONF_TEMPERATURE_MODE_SUNSET_END_TIME,
+        DEFAULT_TEMPERATURE_MODE_SUNSET_END_TIME,
+        selector.TimeSelector(),
     ),
     (CONF_TAKE_OVER_CONTROL, DEFAULT_TAKE_OVER_CONTROL, bool),
     (
@@ -523,10 +578,14 @@ EXTRA_VALIDATION: dict[str, tuple[Any, Any]] = {
     CONF_SUNSET_TIME: (cv.time, str),
     CONF_MIN_SUNSET_TIME: (cv.time, str),
     CONF_MAX_SUNSET_TIME: (cv.time, str),
-    CONF_BRIGHTNESS_MODE_TIME_LIGHT: (cv.time_period, timedelta_as_int),
-    CONF_BRIGHTNESS_MODE_TIME_DARK: (cv.time_period, timedelta_as_int),
-    CONF_TEMPERATURE_MODE_TIME_LIGHT: (cv.positive_time_period, timedelta_as_int),
-    CONF_TEMPERATURE_MODE_TIME_DARK: (cv.positive_time_period, timedelta_as_int),
+    CONF_BRIGHTNESS_MODE_SUNRISE_BEFORE: (cv.positive_time_period, timedelta_as_int),
+    CONF_BRIGHTNESS_MODE_SUNRISE_END_TIME: (cv.time, str),
+    CONF_BRIGHTNESS_MODE_SUNSET_BEFORE: (cv.positive_time_period, timedelta_as_int),
+    CONF_BRIGHTNESS_MODE_SUNSET_END_TIME: (cv.time, str),
+    CONF_TEMPERATURE_MODE_SUNRISE_BEFORE: (cv.positive_time_period, timedelta_as_int),
+    CONF_TEMPERATURE_MODE_SUNRISE_END_TIME: (cv.time, str),
+    CONF_TEMPERATURE_MODE_SUNSET_BEFORE: (cv.positive_time_period, timedelta_as_int),
+    CONF_TEMPERATURE_MODE_SUNSET_END_TIME: (cv.time, str),
 }
 
 

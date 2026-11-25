@@ -16,7 +16,7 @@
           "sleep_color_temp": "Barvna temperatura v načinu spanja (uporabljena, ko je \"sleep_rgb_or_color_temp\" nastavljena na \"color_temp\") v Kelvinih. 😴"
         },
         "title": "Nastavitve prilagodljive osvetlitve",
-        "description": "Konfigurirajte komponento Adaptive Lighting. Imena možnosti so usklajena z nastavitvami v YAML. Če ste ta vnos definirali v YAML, tukaj ne bodo prikazane nobene možnosti. Za interaktivne grafe, ki ponazarjajo učinke parametrov, obiščite to [spletno aplikacijo]({webapp_url}). Za dodatne podrobnosti glejte [uradno dokumentacijo]({docs_url}).",
+        "description": "Custom fork of [Adaptive Lighting](https://github.com/basnijholt/adaptive-lighting), originally created by Bas Nijholt and its contributors.\n\nKonfigurirajte komponento Adaptive Lighting. Imena možnosti so usklajena z nastavitvami v YAML. Če ste ta vnos definirali v YAML, tukaj ne bodo prikazane nobene možnosti. Za interaktivne grafe, ki ponazarjajo učinke parametrov, obiščite to [spletno aplikacijo]({webapp_url}). Za dodatne podrobnosti glejte [uradno dokumentacijo]({docs_url}).",
         "sections": {
           "advanced": {
             "data": {
@@ -60,7 +60,7 @@
     "step": {
       "user": {
         "title": "Izberite ime za instanco Adaptive Lighting",
-        "description": "Vsaka instanca lahko vsebuje več luči!"
+        "description": "Custom fork of [Adaptive Lighting](https://github.com/basnijholt/adaptive-lighting), originally created by Bas Nijholt and its contributors.\n\nVsaka instanca lahko vsebuje več luči!"
       }
     },
     "abort": {

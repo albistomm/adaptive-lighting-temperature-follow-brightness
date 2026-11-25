@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "Vælg et navn for denne Adaptive Belysning",
-        "description": "Vælg et navn til denne konfiguration. Du kan køre flere konfigurationer af Adaptiv Belysning, og hver af dem kan indeholde flere lys!",
+        "description": "Custom fork of [Adaptive Lighting](https://github.com/basnijholt/adaptive-lighting), originally created by Bas Nijholt and its contributors.\n\nVælg et navn til denne konfiguration. Du kan køre flere konfigurationer af Adaptiv Belysning, og hver af dem kan indeholde flere lys!",
         "data": {
           "name": "Navn"
         }
@@ -23,7 +23,7 @@
     "step": {
       "init": {
         "title": "Adaptiv Belysnings indstillinger",
-        "description": "Alle indstillinger tilhørende en Adaptiv Belysnings komponent. Indstillingernes navne svarer til YAML indstillingernes. Ingen indstillinger vises hvis du allerede har konfigureret den i YAML. For interaktive grafer, der viser parametereffekter, besøg [denne webapp]({webapp_url}). Yderligere detaljer finder du i den [officielle dokumentation]({docs_url}).",
+        "description": "Custom fork of [Adaptive Lighting](https://github.com/basnijholt/adaptive-lighting), originally created by Bas Nijholt and its contributors.\n\nAlle indstillinger tilhørende en Adaptiv Belysnings komponent. Indstillingernes navne svarer til YAML indstillingernes. Ingen indstillinger vises hvis du allerede har konfigureret den i YAML. For interaktive grafer, der viser parametereffekter, besøg [denne webapp]({webapp_url}). Yderligere detaljer finder du i den [officielle dokumentation]({docs_url}).",
         "data": {
           "lights": "lights: lyskilder",
           "interval": "interval: Tid imellem opdateringer (i sekunder)",

@@ -17,7 +17,7 @@
           "sleep_brightness": "Uyku modundayken ışıkların parlaklık yüzdesi 😴",
           "sleep_color_temp": "Uyku modunda renk sıcaklığı ( `sleep_rgb_or_color_temp` `color_temp` olarak ayarlandığında kullanılır) Kelvin cinsinden. 😴"
         },
-        "description": "Bir Adaptive Lighting bileşenini yapılandırın. Seçenek adları YAML ayarlarıyla uyumludur. Eğer bu girdiyi YAML’da tanımladıysanız, burada seçenekler görünmez.  \nParametrelerin etkilerini gösteren etkileşimli grafikler için [bu web uygulamasını]({webapp_url}) ziyaret edebilirsiniz. Daha fazla bilgi için [resmi dokümantasyona]({docs_url}) bakın.",
+        "description": "Custom fork of [Adaptive Lighting](https://github.com/basnijholt/adaptive-lighting), originally created by Bas Nijholt and its contributors.\n\nBir Adaptive Lighting bileşenini yapılandırın. Seçenek adları YAML ayarlarıyla uyumludur. Eğer bu girdiyi YAML’da tanımladıysanız, burada seçenekler görünmez.  \nParametrelerin etkilerini gösteren etkileşimli grafikler için [bu web uygulamasını]({webapp_url}) ziyaret edebilirsiniz. Daha fazla bilgi için [resmi dokümantasyona]({docs_url}) bakın.",
         "sections": {
           "advanced": {
             "data": {
@@ -200,7 +200,7 @@
     "step": {
       "user": {
         "title": "Akıllı ışıklandırma örneği için bir ad seçin.",
-        "description": "Her örnek birden fazla ışık içerebilir!"
+        "description": "Custom fork of [Adaptive Lighting](https://github.com/basnijholt/adaptive-lighting), originally created by Bas Nijholt and its contributors.\n\nHer örnek birden fazla ışık içerebilir!"
       }
     },
     "abort": {
